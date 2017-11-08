@@ -1,0 +1,78 @@
+{
+    "name": "ember-component-view",
+    "displayName": "Ember-Component-View",
+    "description": "A tree view for ember components",
+    "version": "0.1.3",
+    "publisher": "phumke",
+    "engines": {
+        "vscode": "^1.17.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onView:emberComponents",
+        "onLanguage:js",
+        "onLanguage:hbs",
+        "*"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "views": {
+            "explorer": [
+                {
+                    "id": "emberComponents",
+                    "name": "Ember Components"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "emberComponents.openFile",
+                "title": "Open File"
+            },
+            {
+				"command": "emberComponents.refreshEntry",
+				"title": "Refresh",
+				"icon": {
+					"light": "icons/refresh_light.svg",
+					"dark": "icons/refresh_dark.svg"
+				}
+            },
+            {
+                "command": "emberComponents.openComponent",
+                "title": "Open Component"
+            },
+            {
+                "command": "emberComponents.closeComponent",
+                "title": "Close Component"
+            }
+        ],
+        "menus": {
+            "view/title": [{
+                "command": "emberComponents.refreshEntry",
+                "when": "view == emberComponents"
+            }],
+            "view/item/context": [{
+                "command": "emberComponents.closeComponent",
+                "when": "view == emberComponents"
+            }],
+            "explorer/context": [{
+                "command": "emberComponents.openComponent"
+            }]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.5.3",
+        "vscode": "^1.1.5",
+        "@types/node": "^7.0.43",
+        "@types/mocha": "^2.2.42"
+    }
+}
