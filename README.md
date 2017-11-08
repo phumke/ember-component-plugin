@@ -4,6 +4,8 @@ This creates a simple tree view of the open components and all discovered relate
 
 ## Features
 
+TODO need to fill this out.
+
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 
 For example if there is an image subfolder under your extension project workspace:
@@ -21,6 +23,11 @@ None
 * Doesn't pre-populate the components when first loaded
 * Loops through and opens each file in turn when hitting refresh
 * May not open all of the components correctly the first time
+
+## Building
+
+In order to build this project you'll need to run 'vsce package'.  More info about that here:
+https://code.visualstudio.com/docs/extensions/publish-extension
 
 ## Outstanding TODOs
 
