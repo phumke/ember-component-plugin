@@ -81,6 +81,6 @@ Initial release of Ember-Component-View.
 
 ### 0.1.4
 
-* Add ability to right click on and test a component or a specific test file
+* Add ability to right click and run all tests or a specific test type for a component
 * Refactored file searching to be more readable and easier to add new filepaths
 * Add support for global stylesheets
