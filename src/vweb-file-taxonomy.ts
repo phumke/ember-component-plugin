@@ -37,6 +37,7 @@ export class FileTaxonomy {
    * @param component
    */
   getComponentFiles(component: Component): File[] {
+    console.log(component)
     const files = [];
     const templateFile = this.getTemplateFile(component);
     const jsFile = this.getJsFile(component);
@@ -57,6 +58,7 @@ export class FileTaxonomy {
 
     return files;
   }
+  // engine-lib/abi-common/addon/components/abi-form.js
 
   getTemplateFile(component: Component): File {
     const name = component.name;
@@ -163,27 +165,24 @@ export class FileTaxonomy {
       `global/${globalEngine}/app/styles/${globalEngine}/components`
     ];
 
-    const found = searchPaths
+    return searchPaths
       .filter(filePath => this.fileExists(filePath))
       .map(filePath => this.getSimilarFiles(filePath, name))
-      .reduce((prev, elem) => prev.concat(elem));
-    console.log(found);
+      .reduce((prev, elem) => prev.concat(elem), []);
+  }
 
-    return found;
-}
+  getSimilarFiles(relativeFilePath: string, desiredName: string): File[] {
+    const matchedFiles = [];
+    fs.readdirSync(path.join(this.workspaceRoot, relativeFilePath)).forEach(file => {
+      if (file.endsWith(desiredName)) {
+        matchedFiles.push(new File(path.join(relativeFilePath, file)));
+      }
+    });
 
-    getSimilarFiles(relativeFilePath: string, desiredName: string): File[] {
-        const matchedFiles = [];
-        fs.readdirSync(path.join(this.workspaceRoot, relativeFilePath)).forEach(file => {
-            if (file.endsWith(desiredName)) {
-                matchedFiles.push(new File(path.join(relativeFilePath, file)));
-            }
-        });
+    return matchedFiles;
+  }
 
-        return matchedFiles;
-    }
-
-    fileExists(relativeFilePath: string): boolean {
-        return fs.existsSync(path.join(this.workspaceRoot, relativeFilePath))
-    }
+  fileExists(relativeFilePath: string): boolean {
+    return fs.existsSync(path.join(this.workspaceRoot, relativeFilePath))
+  }
 }
