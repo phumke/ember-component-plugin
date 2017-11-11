@@ -37,7 +37,6 @@ export class FileTaxonomy {
    * @param component
    */
   getComponentFiles(component: Component): File[] {
-    console.log(component)
     const files = [];
     const templateFile = this.getTemplateFile(component);
     const jsFile = this.getJsFile(component);
