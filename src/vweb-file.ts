@@ -5,6 +5,7 @@ import * as path from 'path';
 // This takes a relative file path
 export class File {
   _name = null;
+  _componentName = null;
   _ext = null;
   _engine = null;
   _rootEngine = null;
@@ -17,11 +18,24 @@ export class File {
   ) {
     // TODO This is only for testing purposes so the variables are set when printed
     this.name();
+    this.componentName();
     this.ext();
     this.engine();
     this.pathRemainder();
     this.platform();
     this.specializedName();
+  }
+
+  isUnitTest() {
+    return (this.isTest() && this.testType() === 'unit');
+  }
+
+  isIntegrationTest() {
+    return (this.isTest() && this.testType() === 'integration');
+  }
+
+  isAcceptanceTest() {
+    return (this.isTest() && this.testType() === 'acceptance');
   }
 
   isTest() {
@@ -70,6 +84,17 @@ export class File {
     return this._name;
   }
 
+  componentName() {
+    if (this._componentName) {
+      return this._componentName;
+    }
+
+    const nameWithoutTest = this.name().endsWith('-test') ? this.name().substring(0, this.name().length - 5) : this.name();
+    const nameWithoutExt = nameWithoutTest.endsWith('-ext') ? nameWithoutTest.substring(0, nameWithoutTest.length - 4) : nameWithoutTest;
+    this._componentName = nameWithoutExt;
+    return this._componentName;
+  }
+
   ext() {
     if (this._ext) {
         return this._ext;
@@ -110,9 +135,7 @@ export class File {
 
     const engineBaseDir = this.engine().split('/')[0];
     this._rootEngine = engineBaseDir.endsWith('-ext') ? engineBaseDir.substring(0, engineBaseDir.length - 4) : engineBaseDir;
-    console.log(this._rootEngine);
 
-    console.log(this._rootEngine);
     return this._rootEngine;
   }
 

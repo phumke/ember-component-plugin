@@ -31,24 +31,23 @@ https://code.visualstudio.com/docs/extensions/publish-extension
 
 ## Outstanding TODOs
 
-* Add support for composure phase 2 locations
-* Add support for global stylesheets - will need to use the baseEngine to then generate the global and extended versions of the engine
-* Add ability to lookup from a test
-* Add ability to lookup from a stylesheet
+* Add support for routes
 * Add right click menu to open editors window
 * Only show right click menu if recognized component
-* Have a single or double click open the component instead of a right click
+* Add support for composure phase 2 locations
+* Add ability to lookup from a stylesheet
+* handle special case of shared directory for scss files
+* fix file structure for global stylesheets
+* Have a single or double click open the component instead of a right click - make this configurable
 * Clean up icons to look like the ones from VS
 * Clean up top level icons - add color to light version
 * Add save/reload capability on reopen working state
 * Add logo for the extension
 * Add tests
-* Refactor
-* Can reduce all the searched file paths as they are generic enough to be handled correctly within the given search paths
-* Add support for routes
-* Add support for partials
-* Add ability to right click on and test - simple filter by filename initially
-
+* Refactor (including splitting treeview from commands)
+* Add support for partials - maybe not - they don't have JS associated
+* Add ability to mark if a file is found in the wrong location
+* Add ability to open a component from right clicking on a test
 
 ## Release Notes
 
@@ -79,3 +78,9 @@ Initial release of Ember-Component-View.
 * Add support for extended test location
 * Added support for more composure phase 2 file locations
 * Fix the component name from engine@component to engine::component
+
+### 0.1.4
+
+* Add ability to right click on and test a component or a specific test file
+* Refactored file searching to be more readable and easier to add new filepaths
+* Add support for global stylesheets

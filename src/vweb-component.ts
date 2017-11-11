@@ -18,7 +18,7 @@ export class Component {
   constructor(
       public readonly file: File
   ) {
-      this.name = file.name();
+      this.name = file.componentName();
       this.platform = file.platform();
       this.engine = file.engine();
       this.pathRemainder = file.pathRemainder();

@@ -17,6 +17,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand('emberComponents.openComponent', file => emberComponentsProvider.openComponent(file)));
     context.subscriptions.push(vscode.commands.registerCommand('emberComponents.closeComponent', component => emberComponentsProvider.closeComponent(component)));
+
+    context.subscriptions.push(vscode.commands.registerCommand('emberComponents.runTests', componentTreeItem => emberComponentsProvider.runTests(componentTreeItem)));
+    context.subscriptions.push(vscode.commands.registerCommand('emberComponents.runUnitTests', componentTreeItem => emberComponentsProvider.runUnitTests(componentTreeItem)));
+    context.subscriptions.push(vscode.commands.registerCommand('emberComponents.runIntTests', componentTreeItem => emberComponentsProvider.runIntegrationTests(componentTreeItem)));
+    context.subscriptions.push(vscode.commands.registerCommand('emberComponents.runAcceptTests', componentTreeItem => emberComponentsProvider.runAcceptanceTests(componentTreeItem)));
+
     context.subscriptions.push(vscode.commands.registerCommand('emberComponents.openFile', filePath => emberComponentsProvider.openFile(filePath)));
     context.subscriptions.push(vscode.commands.registerCommand('emberComponents.refreshEntry', () => emberComponentsProvider.refresh()));
 

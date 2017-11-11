@@ -2,7 +2,7 @@
     "name": "ember-component-view",
     "displayName": "Ember-Component-View",
     "description": "A tree view for ember components",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "publisher": "phumke",
     "engines": {
         "vscode": "^1.17.0"
@@ -46,6 +46,22 @@
             {
                 "command": "emberComponents.closeComponent",
                 "title": "Close Component"
+            },
+            {
+                "command": "emberComponents.runTests",
+                "title": "Run Tests"
+            },
+            {
+                "command": "emberComponents.runUnitTests",
+                "title": "Run Unit Tests"
+            },
+            {
+                "command": "emberComponents.runIntTests",
+                "title": "Run Integration Tests"
+            },
+            {
+                "command": "emberComponents.runAcceptTests",
+                "title": "Run Acceptance Tests"
             }
         ],
         "menus": {
@@ -53,10 +69,32 @@
                 "command": "emberComponents.refreshEntry",
                 "when": "view == emberComponents"
             }],
-            "view/item/context": [{
-                "command": "emberComponents.closeComponent",
-                "when": "view == emberComponents"
-            }],
+            "view/item/context": [
+                {
+                    "command": "emberComponents.closeComponent",
+                    "when": "view == emberComponents"
+                },
+                {
+                    "command": "emberComponents.runTests",
+                    "when": "view == emberComponents",
+                    "group": "tests@1"
+                },
+                {
+                    "command": "emberComponents.runUnitTests",
+                    "when": "view == emberComponents",
+                    "group": "tests@2"
+                },
+                {
+                    "command": "emberComponents.runIntTests",
+                    "when": "view == emberComponents",
+                    "group": "tests@3"
+                },
+                {
+                    "command": "emberComponents.runAcceptTests",
+                    "when": "view == emberComponents",
+                    "group": "tests@4"
+                }
+            ],
             "explorer/context": [{
                 "command": "emberComponents.openComponent"
             }]

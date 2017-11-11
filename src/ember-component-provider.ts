@@ -76,11 +76,11 @@ export class EmberComponentsProvider implements vscode.TreeDataProvider<vscode.T
             console.error('Workspace root is non voyager-web.');
             return;
         }
-
-        // this.refresh();
     }
 
-    // This will open the clicked on file
+    /**
+     * This will open the clicked on file
+     */
     openFile(relativeFilePath: string) {
         const fullPath: string = this.fileTaxonomy.getFullPath(relativeFilePath);
         var uri: vscode.Uri = vscode.Uri.file(fullPath);
@@ -91,6 +91,11 @@ export class EmberComponentsProvider implements vscode.TreeDataProvider<vscode.T
         });
     }
 
+    /**
+     * This will open a component within the file tree given a specified file
+     *
+     * @param fileUri
+     */
     openComponent(fileUri): void {
         const filepath = fileUri.path;
         const file = new File(getRelativeFilepath(this.workspaceRoot, filepath));
@@ -99,14 +104,57 @@ export class EmberComponentsProvider implements vscode.TreeDataProvider<vscode.T
         this._onDidChangeTreeData.fire();
     }
 
+    /**
+     * This will close a component within the file tree given a specified component
+     *
+     * @param treeItem
+     */
     closeComponent(treeItem: vscode.TreeItem): void {
         if (treeItem.contextValue === 'component') {
             this.openComponents.delete((<ComponentTreeElement> treeItem).component);
         } else {
-            this.openComponents.delete(this.getComponentFromFile((<FileTreeElement> treeItem).file));
+            this.openComponents.delete(new Component((<FileTreeElement> treeItem).file));
         }
 
         this._onDidChangeTreeData.fire();
+    }
+
+    runUnitTests(treeItem: vscode.TreeItem): void {
+        this.runTests(treeItem, 'unit');
+    }
+
+    runIntegrationTests(treeItem: vscode.TreeItem): void {
+        this.runTests(treeItem, 'integration');
+    }
+
+    runAcceptanceTests(treeItem: vscode.TreeItem): void {
+        this.runTests(treeItem, 'acceptance');
+    }
+
+    /**
+     * This will attempt to run a given type of test for a component wihtin the browser, or all tests that match that specializedName.
+     *
+     * @param treeItem the clicked on component
+     * @param testType the type of component, options are 'unit', 'integration', 'acceptance', or '', defaults to ''
+     */
+    runTests(treeItem: vscode.TreeItem, testType: string = ''): void {
+        const rootPath = 'https://pemberly.www.linkedin.com:4443/tests/index.html';
+        const filterBase = '?filter=';
+        let name;
+        if (treeItem.contextValue === 'component') {
+            name = (<ComponentTreeElement> treeItem).component.name;
+        } else {
+            name = (<FileTreeElement> treeItem).file.componentName();
+        }
+
+        let filter = name;
+        if (testType) {
+            filter = '/' + testType + '.*' + name + '/i';
+        }
+
+        const browserPath = rootPath + filterBase + filter;
+        // Open in browser
+        vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(encodeURI(browserPath)));
     }
 
     refresh(): void {
@@ -150,9 +198,5 @@ export class EmberComponentsProvider implements vscode.TreeDataProvider<vscode.T
     getOpenFiles(): Promise<File[]> {
         // return getTestFiles(this.workspaceRoot);
         return getOpenFiles(this.workspaceRoot);
-    }
-
-    getComponentFromFile(file): Component {
-        return new Component(file);
     }
 }
