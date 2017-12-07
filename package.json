@@ -2,7 +2,7 @@
     "name": "ember-component-view",
     "displayName": "Ember-Component-View",
     "description": "A tree view for ember components",
-    "version": "0.1.4",
+    "version": "0.1.6",
     "publisher": "phumke",
     "engines": {
         "vscode": "^1.17.0"
@@ -16,6 +16,10 @@
         "onLanguage:hbs",
         "*"
     ],
+    "repository": {
+        "type": "git",
+        "url": "http://gitli.corp.linkedin.com/ember-component-view/ember-component-view.git"
+    },
     "main": "./out/extension",
     "contributes": {
         "views": {

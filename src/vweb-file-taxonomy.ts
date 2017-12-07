@@ -57,7 +57,6 @@ export class FileTaxonomy {
 
     return files;
   }
-  // engine-lib/abi-common/addon/components/abi-form.js
 
   getTemplateFile(component: Component): File {
     const name = component.name;
@@ -86,6 +85,7 @@ export class FileTaxonomy {
     return null;
   }
 
+  // engine-lib/abi-common/addon/components/abi-form.js
   getJsFile(component: Component): File {
     const name = component.name;
     const platform = component.platform;
@@ -133,21 +133,35 @@ export class FileTaxonomy {
     const searchPaths = [
       `core/lib/voyager-testing/tests/unit/components/${rootEngine}/${remainder}/${globalFilename}`,
       `core/lib/voyager-testing/tests/unit/components/${rootEngine}/${remainder}/${platformFilename}`,
+      `core/lib/voyager-testing/tests/unit/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
+      `core/lib/voyager-testing/tests/unit/components/${rootEngine}/lib/${remainder}/${platformFilename}`,
       `core/lib/voyager-testing/tests/integration/components/${rootEngine}/${remainder}/${globalFilename}`,
       `core/lib/voyager-testing/tests/integration/components/${rootEngine}/${remainder}/${platformFilename}`,
+      `core/lib/voyager-testing/tests/integration/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
+      `core/lib/voyager-testing/tests/integration/components/${rootEngine}/lib/${remainder}/${platformFilename}`,
       `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/${remainder}/${globalFilename}`,
       `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/${remainder}/${platformFilename}`,
+      `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
+      `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/lib/${remainder}/${platformFilename}`,
       `extended/tests/unit/components/${rootEngine}/${remainder}/${globalFilename}`,
       `extended/tests/unit/components/${platformEngine}/${remainder}/${globalFilename}`,
+      `extended/tests/unit/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
+      `extended/tests/unit/components/${platformEngine}/lib/${remainder}/${globalFilename}`,
       `extended/tests/integration/components/${rootEngine}/${remainder}/${globalFilename}`,
       `extended/tests/integration/components/${platformEngine}/${remainder}/${globalFilename}`,
+      `extended/tests/integration/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
+      `extended/tests/integration/components/${platformEngine}/lib/${remainder}/${globalFilename}`,
       `extended/tests/acceptance/components/${rootEngine}/${remainder}/${globalFilename}`,
       `extended/tests/acceptance/components/${platformEngine}/${remainder}/${globalFilename}`,
+      `extended/tests/acceptance/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
+      `extended/tests/acceptance/components/${platformEngine}/lib/${remainder}/${globalFilename}`,
     ];
 
     return searchPaths.filter(filePath => this.fileExists(filePath)).map(filePath => new File(filePath));
   }
 
+  // /extended/lib/messaging-ext/addon/styles/components/_msg-premium-mailboxes.scss
+  // TODO handle when the platform is lib
   getScssFiles(component: Component): File[] {
     const name = component.name + '.scss';
     const platform = component.platform;
@@ -161,8 +175,15 @@ export class FileTaxonomy {
       `${platform}/lib/${engine}/app/styles/components/${remainder}`,
       `${platform}/lib/${engine}/addon/styles/components`,
       `${platform}/lib/${engine}/app/styles/components`,
-      `global/${globalEngine}/app/styles/${globalEngine}/components`
+      `global/${globalEngine}/app/styles/${globalEngine}/components`,
+      `lib/${globalEngine}/app/styles/${globalEngine}/components`,
     ];
+
+    // Handle the weird shared-ext folders
+    engine.split('/').forEach(elem => {
+      searchPaths.push(`${platform}/lib/${engine}/app/styles/${elem}/components/${remainder}`);
+      searchPaths.push(`lib/${engine}/app/styles/${elem}/components/${remainder}`);
+    });
 
     return searchPaths
       .filter(filePath => this.fileExists(filePath))
