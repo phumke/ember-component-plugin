@@ -1,5 +1,6 @@
 {
     "name": "ember-component-view",
+    "license": "MIT",
     "displayName": "Ember-Component-View",
     "description": "A tree view for ember components",
     "version": "0.1.6",
@@ -36,12 +37,12 @@
                 "title": "Open File"
             },
             {
-				"command": "emberComponents.refreshEntry",
-				"title": "Refresh",
-				"icon": {
-					"light": "icons/refresh_light.svg",
-					"dark": "icons/refresh_dark.svg"
-				}
+                "command": "emberComponents.refreshEntry",
+                "title": "Refresh",
+                "icon": {
+                    "light": "icons/refresh_light.svg",
+                    "dark": "icons/refresh_dark.svg"
+                }
             },
             {
                 "command": "emberComponents.openComponent",
@@ -69,10 +70,12 @@
             }
         ],
         "menus": {
-            "view/title": [{
-                "command": "emberComponents.refreshEntry",
-                "when": "view == emberComponents"
-            }],
+            "view/title": [
+                {
+                    "command": "emberComponents.refreshEntry",
+                    "when": "view == emberComponents"
+                }
+            ],
             "view/item/context": [
                 {
                     "command": "emberComponents.closeComponent",
@@ -99,9 +102,11 @@
                     "group": "tests@4"
                 }
             ],
-            "explorer/context": [{
-                "command": "emberComponents.openComponent"
-            }]
+            "explorer/context": [
+                {
+                    "command": "emberComponents.openComponent"
+                }
+            ]
         }
     },
     "scripts": {
