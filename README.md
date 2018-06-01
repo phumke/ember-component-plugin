@@ -44,6 +44,7 @@ https://code.visualstudio.com/docs/extensions/publish-extension
 
 ## Outstanding TODOs
 
+* Nest all platforms of a single component so the tree goes: component -> different platforms -> associated files
 * Add support for services
 * Add support for routes
 * Add right click menu to open editors window
@@ -51,8 +52,8 @@ https://code.visualstudio.com/docs/extensions/publish-extension
 * Add support for composure phase 2 locations
 * Add support for composure phase 4 test locations
 * Add ability to lookup from a stylesheet
-* handle special case of shared directory for scss files
-* fix file structure for global stylesheets
+* Handle special case of shared directory for scss files
+* Fix file structure for global stylesheets
 * Have a single or double click open the component instead of a right click - make this configurable
 * Clean up icons to look like the ones from VS
 * Clean up top level icons - add color to light version
@@ -67,6 +68,10 @@ https://code.visualstudio.com/docs/extensions/publish-extension
 ## Release Notes
 
 Still in dogfooding stage.
+
+### 0.1.7
+
+* Nested all platforms for a given component within the component top level
 
 ### 0.1.6
 

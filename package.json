@@ -3,7 +3,7 @@
     "license": "MIT",
     "displayName": "Ember-Component-View",
     "description": "A tree view for ember components",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "publisher": "phumke",
     "engines": {
         "vscode": "^1.17.0"
@@ -19,7 +19,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "http://gitli.corp.linkedin.com/ember-component-view/ember-component-view.git"
+        "url": "http://github.com/phumke/ember-component-plugin.git"
     },
     "main": "./out/extension",
     "contributes": {

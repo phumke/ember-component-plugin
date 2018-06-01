@@ -3,11 +3,11 @@
 import { File } from './vweb-file';
 
 const componentPlatformOrdering = {
-  "lib": 0,
-  "engine-lib": 0,
-  "core": 1,
-  "extended": 2,
-}
+  lib: 0,
+  'engine-lib': 0,
+  core: 1,
+  extended: 2,
+};
 
 export class Component {
   name = null;
@@ -15,26 +15,24 @@ export class Component {
   engine = null;
   pathRemainder = null;
 
-  constructor(
-      public readonly file: File
-  ) {
-      this.name = file.componentName();
-      this.platform = file.platform();
-      this.engine = file.engine();
-      this.pathRemainder = file.pathRemainder();
+  constructor(public readonly file: File) {
+    this.name = file.componentName();
+    this.platform = file.platform();
+    this.engine = file.engine();
+    this.pathRemainder = file.pathRemainder();
   }
 
   callableName() {
-    let name = this.name + ' (' + this.engine + '::';
+    let name = this.engine + '::';
     if (this.pathRemainder) {
-        name = name + this.pathRemainder + '/';
+      name = name + this.pathRemainder + '/';
     }
 
-    return name + this.name + ')';
+    return name + this.name;
   }
 
   toIdString() {
-      return this.name + this.platform + this.engine + this.pathRemainder;
+    return this.name + this.platform + this.engine + this.pathRemainder;
   }
 }
 
@@ -42,27 +40,27 @@ export class ComponentSet {
   map = new Map();
 
   has(value: Component): boolean {
-      return this.map.has(value.toIdString());
+    return this.map.has(value.toIdString());
   }
 
   add(value: Component) {
-      if (!this.has(value)) {
-          return this.map.set(value.toIdString(), value);
-      }
+    if (!this.has(value)) {
+      return this.map.set(value.toIdString(), value);
+    }
 
-      return this;
+    return this;
   }
 
   delete(value: Component) {
-      if (this.has(value)) {
-          return this.map.delete(value.toIdString());
-      }
+    if (this.has(value)) {
+      return this.map.delete(value.toIdString());
+    }
 
-      return false;
+    return false;
   }
 
   toArray(): Component[] {
-      return Array.from(this.map.values());
+    return Array.from(this.map.values());
   }
 
   toSortedArray(): Component[] {
@@ -73,10 +71,12 @@ export class ComponentSet {
 
 function compareComponents(left: Component, right: Component) {
   if (left.name < right.name) {
-      return -1;
+    return -1;
   } else if (left.name > right.name) {
-      return 1;
+    return 1;
   }
-  return componentPlatformOrdering[left.platform] - componentPlatformOrdering[right.platform];
+  return (
+    componentPlatformOrdering[left.platform] -
+    componentPlatformOrdering[right.platform]
+  );
 }
-

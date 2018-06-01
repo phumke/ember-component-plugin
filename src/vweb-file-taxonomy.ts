@@ -17,8 +17,7 @@ export function getRelativeFilepath(root: string, filePath: string): string {
 
 // TODO refactor with looping
 export class FileTaxonomy {
-  constructor(private workspaceRoot: string) {
-  }
+  constructor(private workspaceRoot: string) {}
 
   // Handle identifying non-component files and rejecting them
   filterNonComponents(files: File[]) {
@@ -30,18 +29,46 @@ export class FileTaxonomy {
   }
 
   /**
-   * file structure:
-   *  trunk/<core or extended>/lib/<engine or engine-ext>/addon/<components or templates>/<N/A or components>/<remainder of path>.<js or hbs>
-   *  trunk/engine-lib/addon/<components or templates>/<N/A or components>/<remainder of path>.<js or hbs>
-   *  trunk/global/addon/<components or templates>/<N/A or components>/<remainder of path>.<js or hbs>
+   * The list of possible platforms which have files for that component
+   */
+  getComponentPlatforms(component: Component): string[] {
+    const platforms = ['lib', 'engine-lib', 'core', 'extended'];
+
+    return platforms.filter(
+      platform => this.getComponentPlatformFiles(component, platform).length > 0
+    );
+  }
+
+  /**
+   * Get the list of all related component files for a given platform
    * @param component
    */
-  getComponentFiles(component: Component): File[] {
+  getComponentPlatformFiles(component: Component, platform: string): File[] {
     const files = [];
-    const templateFile = this.getTemplateFile(component);
-    const jsFile = this.getJsFile(component);
-    const testFiles = this.getTestFiles(component);
-    const scssFiles = this.getScssFiles(component);
+    const templateFile = this.getTemplateFile(
+      component.name,
+      platform,
+      component.engine,
+      component.pathRemainder
+    );
+    const jsFile = this.getJsFile(
+      component.name,
+      platform,
+      component.engine,
+      component.pathRemainder
+    );
+    const testFiles = this.getTestFiles(
+      component.name,
+      platform,
+      component.engine,
+      component.pathRemainder
+    );
+    const scssFiles = this.getScssFiles(
+      component.name,
+      platform,
+      component.engine,
+      component.pathRemainder
+    );
     if (templateFile) {
       files.push(templateFile);
     }
@@ -55,53 +82,37 @@ export class FileTaxonomy {
       files.push.apply(files, scssFiles);
     }
 
+    console.log(platform);
+    console.log(testFiles);
+    console.log(scssFiles);
+
     return files;
   }
 
-  getTemplateFile(component: Component): File {
-    const name = component.name;
-    const platform = component.platform;
-    const engine = component.engine;
-    const rootEngine = component.file.rootEngine();
-    const remainder = component.pathRemainder;
+  /**
+   * Finds the template file associated with that template
+   * @param name the component name
+   * @param platform the desired platform to search in
+   * @param engine the component engine
+   * @param remainder the remainder of the path
+   */
+  getTemplateFile(
+    name: string,
+    platform: string,
+    engine: string,
+    remainder: string
+  ): File {
     const ext = '.hbs';
     const filename = name + ext;
+    const commonEngine = this.commonEngine(engine);
 
     const searchPaths = [
       `${platform}/lib/${engine}/addon/templates/components/${remainder}/${filename}`,
       `${platform}/engines/${engine}/addon/templates/components/${remainder}/${filename}`,
-      `${platform}/lib/${rootEngine}/addon/templates/components/${remainder}/${filename}`,
-      `${platform}/engines/${rootEngine}/addon/templates/components/${remainder}/${filename}`,
-      `engine-lib/${engine}/addon/templates/components/${remainder}/${filename}`,
-      `lib/${engine}/addon/templates/components/${remainder}/${filename}`,
-    ];
-
-    for (const filePath of searchPaths) {
-      if (this.fileExists(filePath)) {
-        return new File(filePath);
-      }
-    }
-
-    return null;
-  }
-
-  // engine-lib/abi-common/addon/components/abi-form.js
-  getJsFile(component: Component): File {
-    const name = component.name;
-    const platform = component.platform;
-    const engine = component.engine;
-    const rootEngine = component.file.rootEngine();
-    const remainder = component.pathRemainder;
-    const ext = '.js';
-    const filename = name + ext;
-
-    const searchPaths = [
-      `${platform}/lib/${engine}/addon/components/${remainder}/${filename}`,
-      `${platform}/engines/${engine}/addon/components/${remainder}/${filename}`,
-      `${platform}/lib/${rootEngine}/addon/components/${remainder}/${filename}`,
-      `${platform}/engines/${rootEngine}/addon/components/${remainder}/${filename}`,
-      `engine-lib/${engine}/addon/components/${remainder}/${filename}`,
-      `lib/${engine}/addon/components/${remainder}/${filename}`,
+      `${platform}/${engine}/addon/templates/components/${remainder}/${filename}`,
+      `${platform}/lib/${commonEngine}/addon/templates/components/${remainder}/${filename}`,
+      `${platform}/engines/${commonEngine}/addon/templates/components/${remainder}/${filename}`,
+      `${platform}/${commonEngine}/addon/templates/components/${remainder}/${filename}`,
     ];
 
     for (const filePath of searchPaths) {
@@ -114,95 +125,168 @@ export class FileTaxonomy {
   }
 
   /**
-   * file structure
-   *  trunk/extended/tests/unit/components/<engine>/<remainder of path>/<name>-test.js
-   *  trunk/core/lib/voyager-testing/tests/<unit or integration>/components/<engine without ext>/<remainder of path>/<name><N/A or -core or -ext>-test.js
-   *  trunk/core/lib/voyager-testing/tests/acceptance/<engine without ext>/<remainder of path>/<name><N/A or -core or -ext>-test.js
-   * @param originalComponentFile
+   * Finds the js file associated with that template
+   * @param name the component name
+   * @param platform the desired platform to search in
+   * @param engine the component engine
+   * @param remainder the remainder of the path
    */
-  getTestFiles(component: Component): File[] {
-    const name = component.name;
-    const platform = component.platform;
-    const platformExt = (platform === 'core' ? 'core' : 'ext');
-    const rootEngine = component.file.rootEngine();
-    const platformEngine = rootEngine + '-' + platformExt;
-    const remainder = component.pathRemainder;
-    const globalFilename = name + '-test.js';
-    const platformFilename = name + '-' + platformExt + '-test.js';
+  getJsFile(
+    name: string,
+    platform: string,
+    engine: string,
+    remainder: string
+  ): File {
+    const ext = '.js';
+    const filename = name + ext;
+    const commonEngine = this.commonEngine(engine);
 
     const searchPaths = [
-      `core/lib/voyager-testing/tests/unit/components/${rootEngine}/${remainder}/${globalFilename}`,
-      `core/lib/voyager-testing/tests/unit/components/${rootEngine}/${remainder}/${platformFilename}`,
-      `core/lib/voyager-testing/tests/unit/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
-      `core/lib/voyager-testing/tests/unit/components/${rootEngine}/lib/${remainder}/${platformFilename}`,
-      `core/lib/voyager-testing/tests/integration/components/${rootEngine}/${remainder}/${globalFilename}`,
-      `core/lib/voyager-testing/tests/integration/components/${rootEngine}/${remainder}/${platformFilename}`,
-      `core/lib/voyager-testing/tests/integration/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
-      `core/lib/voyager-testing/tests/integration/components/${rootEngine}/lib/${remainder}/${platformFilename}`,
-      `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/${remainder}/${globalFilename}`,
-      `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/${remainder}/${platformFilename}`,
-      `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
-      `core/lib/voyager-testing/tests/acceptance/components/${rootEngine}/lib/${remainder}/${platformFilename}`,
-      `extended/tests/unit/components/${rootEngine}/${remainder}/${globalFilename}`,
-      `extended/tests/unit/components/${platformEngine}/${remainder}/${globalFilename}`,
-      `extended/tests/unit/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
-      `extended/tests/unit/components/${platformEngine}/lib/${remainder}/${globalFilename}`,
-      `extended/tests/integration/components/${rootEngine}/${remainder}/${globalFilename}`,
-      `extended/tests/integration/components/${platformEngine}/${remainder}/${globalFilename}`,
-      `extended/tests/integration/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
-      `extended/tests/integration/components/${platformEngine}/lib/${remainder}/${globalFilename}`,
-      `extended/tests/acceptance/components/${rootEngine}/${remainder}/${globalFilename}`,
-      `extended/tests/acceptance/components/${platformEngine}/${remainder}/${globalFilename}`,
-      `extended/tests/acceptance/components/${rootEngine}/lib/${remainder}/${globalFilename}`,
-      `extended/tests/acceptance/components/${platformEngine}/lib/${remainder}/${globalFilename}`,
+      `${platform}/lib/${engine}/addon/components/${remainder}/${filename}`,
+      `${platform}/engines/${engine}/addon/components/${remainder}/${filename}`,
+      `${platform}/${engine}/addon/components/${remainder}/${filename}`,
+      `${platform}/lib/${commonEngine}/addon/components/${remainder}/${filename}`,
+      `${platform}/engines/${commonEngine}/addon/components/${remainder}/${filename}`,
+      `${platform}/${commonEngine}/addon/components/${remainder}/${filename}`,
     ];
 
-    return searchPaths.filter(filePath => this.fileExists(filePath)).map(filePath => new File(filePath));
+    for (const filePath of searchPaths) {
+      if (this.fileExists(filePath)) {
+        return new File(filePath);
+      }
+    }
+
+    return null;
   }
 
-  // /extended/lib/messaging-ext/addon/styles/components/_msg-premium-mailboxes.scss
-  // TODO handle when the platform is lib
-  getScssFiles(component: Component): File[] {
-    const name = component.name + '.scss';
-    const platform = component.platform;
-    const platformExt = (platform === 'core' ? 'core' : 'ext');
-    const engine = component.engine;
-    const globalEngine = component.file.globalEngine();
-    const remainder = component.pathRemainder;
+  /**
+   * Finds the test files associated with that template
+   * @param name the component name
+   * @param platform the desired platform to search in
+   * @param engine the component engine
+   * @param remainder the remainder of the path
+   */
+  getTestFiles(
+    name: string,
+    platform: string,
+    engine: string,
+    remainder: string
+  ): File[] {
+    const platformExt = platform === 'core' ? 'core' : 'ext';
+    const platformEngine = engine + '-' + platformExt;
+    const globalFilename = name + '-test.js';
+    const platformFilename = name + '-' + platformExt + '-test.js';
+    const coreUnitRoot = 'core/lib/voyager-testing/tests/unit/components';
+    const coreIntRoot = 'core/lib/voyager-testing/tests/integration/components';
+    const coreAccRoot = 'core/lib/voyager-testing/tests/acceptance/components';
+    const extendedUnitRoot = 'extended/tests/unit/components';
+    const extendedIntRoot = 'extended/tests/integration/components';
+    const extendedAccRoot = 'extended/tests/acceptance/components';
 
     const searchPaths = [
-      `${platform}/lib/${engine}/addon/styles/components/${remainder}`,
-      `${platform}/lib/${engine}/app/styles/components/${remainder}`,
-      `${platform}/lib/${engine}/addon/styles/components`,
-      `${platform}/lib/${engine}/app/styles/components`,
+      `${coreUnitRoot}/${engine}/${remainder}/${globalFilename}`,
+      `${coreUnitRoot}/${engine}/${remainder}/${platformFilename}`,
+      `${coreUnitRoot}/${engine}/lib/${remainder}/${globalFilename}`,
+      `${coreUnitRoot}/${engine}/lib/${remainder}/${platformFilename}`,
+      `${coreIntRoot}/${engine}/${remainder}/${globalFilename}`,
+      `${coreIntRoot}/${engine}/${remainder}/${platformFilename}`,
+      `${coreIntRoot}/${engine}/lib/${remainder}/${globalFilename}`,
+      `${coreIntRoot}/${engine}/lib/${remainder}/${platformFilename}`,
+      `${coreAccRoot}/${engine}/${remainder}/${globalFilename}`,
+      `${coreAccRoot}/${engine}/${remainder}/${platformFilename}`,
+      `${coreAccRoot}/${engine}/lib/${remainder}/${globalFilename}`,
+      `${coreAccRoot}/${engine}/lib/${remainder}/${platformFilename}`,
+      `${extendedUnitRoot}/${engine}/${remainder}/${globalFilename}`,
+      `${extendedUnitRoot}/${platformEngine}/${remainder}/${globalFilename}`,
+      `${extendedUnitRoot}/${engine}/lib/${remainder}/${globalFilename}`,
+      `${extendedUnitRoot}/${platformEngine}/lib/${remainder}/${globalFilename}`,
+      `${extendedIntRoot}/${engine}/${remainder}/${globalFilename}`,
+      `${extendedIntRoot}/${platformEngine}/${remainder}/${globalFilename}`,
+      `${extendedIntRoot}/${engine}/lib/${remainder}/${globalFilename}`,
+      `${extendedIntRoot}/${platformEngine}/lib/${remainder}/${globalFilename}`,
+      `${extendedAccRoot}/${engine}/${remainder}/${globalFilename}`,
+      `${extendedAccRoot}/${platformEngine}/${remainder}/${globalFilename}`,
+      `${extendedAccRoot}/${engine}/lib/${remainder}/${globalFilename}`,
+      `${extendedAccRoot}/${platformEngine}/lib/${remainder}/${globalFilename}`,
+    ];
+
+    return searchPaths
+      .filter(filePath => this.fileExists(filePath))
+      .map(filePath => new File(filePath));
+  }
+
+  /**
+   * Finds the scss files associated with the component
+   * TODO handle when the platform is lib
+   * @param name the component name
+   * @param platform the desired platform to search in
+   * @param engine the component engine
+   * @param remainder the remainder of the path
+   */
+  getScssFiles(
+    name: string,
+    platform: string,
+    engine: string,
+    remainder: string
+  ): File[] {
+    const nameWExt = name + '.scss';
+    const platformExt = platform === 'core' ? 'core' : 'ext';
+    const globalEngine = this.globalEngine(engine);
+    const commonEngine = this.commonEngine(engine);
+    const appDir = 'app/styles/components';
+    const addonDir = 'addon/styles/components';
+
+    const searchPaths = [
+      `${platform}/lib/${engine}/${addonDir}/${remainder}`,
+      `${platform}/lib/${engine}/${appDir}/${remainder}`,
+      `${platform}/lib/${engine}/${addonDir}`,
+      `${platform}/lib/${engine}/${appDir}`,
+      `${platform}/${engine}/${appDir}`,
+      `${platform}/${engine}/${addonDir}`,
+      `${platform}/${commonEngine}/${appDir}`,
+      `${platform}/${commonEngine}/${addonDir}`,
       `global/${globalEngine}/app/styles/${globalEngine}/components`,
       `lib/${globalEngine}/app/styles/${globalEngine}/components`,
     ];
 
     // Handle the weird shared-ext folders
     engine.split('/').forEach(elem => {
-      searchPaths.push(`${platform}/lib/${engine}/app/styles/${elem}/components/${remainder}`);
-      searchPaths.push(`lib/${engine}/app/styles/${elem}/components/${remainder}`);
+      searchPaths.push(
+        `${platform}/lib/${engine}/app/styles/${elem}/components/${remainder}`
+      );
+      searchPaths.push(
+        `lib/${engine}/app/styles/${elem}/components/${remainder}`
+      );
     });
 
     return searchPaths
-      .filter(filePath => this.fileExists(filePath))
-      .map(filePath => this.getSimilarFiles(filePath, name))
+      .filter(searchPath => this.fileExists(searchPath))
+      .map(searchPath => this.getSimilarFiles(searchPath, nameWExt))
       .reduce((prev, elem) => prev.concat(elem), []);
   }
 
   getSimilarFiles(relativeFilePath: string, desiredName: string): File[] {
     const matchedFiles = [];
-    fs.readdirSync(path.join(this.workspaceRoot, relativeFilePath)).forEach(file => {
-      if (file.endsWith(desiredName)) {
-        matchedFiles.push(new File(path.join(relativeFilePath, file)));
-      }
-    });
+    fs
+      .readdirSync(path.join(this.workspaceRoot, relativeFilePath))
+      .forEach(file => {
+        if (file.endsWith(desiredName)) {
+          matchedFiles.push(new File(path.join(relativeFilePath, file)));
+        }
+      });
 
     return matchedFiles;
   }
 
   fileExists(relativeFilePath: string): boolean {
-    return fs.existsSync(path.join(this.workspaceRoot, relativeFilePath))
+    return fs.existsSync(path.join(this.workspaceRoot, relativeFilePath));
+  }
+
+  commonEngine(engine: string) {
+    return engine + '-common';
+  }
+
+  globalEngine(engine: string) {
+    return engine + '-global';
   }
 }
