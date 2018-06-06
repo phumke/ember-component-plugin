@@ -3,7 +3,7 @@
     "license": "MIT",
     "displayName": "Ember-Component-View",
     "description": "A tree view for ember components",
-    "version": "0.1.7",
+    "version": "0.2.0",
     "publisher": "phumke",
     "engines": {
         "vscode": "^1.17.0"
@@ -37,14 +37,6 @@
                 "title": "Open File"
             },
             {
-                "command": "emberComponents.refreshEntry",
-                "title": "Refresh",
-                "icon": {
-                    "light": "icons/refresh_light.svg",
-                    "dark": "icons/refresh_dark.svg"
-                }
-            },
-            {
                 "command": "emberComponents.openComponent",
                 "title": "Open Component"
             },
@@ -70,12 +62,6 @@
             }
         ],
         "menus": {
-            "view/title": [
-                {
-                    "command": "emberComponents.refreshEntry",
-                    "when": "view == emberComponents"
-                }
-            ],
             "view/item/context": [
                 {
                     "command": "emberComponents.closeComponent",

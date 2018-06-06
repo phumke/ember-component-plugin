@@ -4,9 +4,26 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { File } from './vweb-file';
-import { FileTaxonomy, getRelativeFilepath } from './vweb-file-taxonomy';
+import {
+  FileTaxonomy,
+  getComponentName,
+  getExt,
+  getName,
+  getPlatform,
+  getRelativeFilepath,
+  getSpecializedName,
+} from './vweb-file-taxonomy';
 import { Component, ComponentSet } from './vweb-component';
-import { getTestFiles, getOpenFiles } from './open-editors';
+import { getOpenFiles } from './open-editors';
+import { Platform } from './vweb-platform';
+
+let _channel: vscode.OutputChannel;
+export function getOutputChannel(): vscode.OutputChannel {
+  if (!_channel) {
+    _channel = vscode.window.createOutputChannel('Ember Components');
+  }
+  return _channel;
+}
 
 /**
  * This is an interface class for vscode proper
@@ -33,16 +50,15 @@ export class PlatformTreeElement extends vscode.TreeItem {
   iconPath = null;
 
   constructor(
-    public readonly component: Component,
-    public readonly platform: string,
+    public readonly platform: Platform,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
-    super(platform, collapsibleState);
+    super(platform.name, collapsibleState);
 
     let iconName = 'shared';
-    if (platform === 'core') {
+    if (platform.name === 'core') {
       iconName = 'core';
-    } else if (platform === 'extended') {
+    } else if (platform.name === 'extended') {
       iconName = 'extended';
     }
     this.iconPath = {
@@ -61,7 +77,7 @@ export class FileTreeElement extends vscode.TreeItem {
   command = {
     command: 'emberComponents.openFile',
     title: '',
-    arguments: [this.file.relativeFilepath],
+    arguments: [this.file],
   };
   iconPath = null;
 
@@ -69,14 +85,18 @@ export class FileTreeElement extends vscode.TreeItem {
     public readonly file: File,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
-    super(file.specializedName(), collapsibleState);
+    super(getSpecializedName(file.relativeFilepath), collapsibleState);
 
+    const ext = getExt(file.relativeFilepath);
     let iconName = 'file_type_js.svg';
-    if (this.file.ext() == 'hbs') {
+    if (ext == 'hbs') {
       iconName = 'file_type_handlebars.svg';
-    } else if (this.file.ext() == 'scss') {
+    } else if (ext == 'scss') {
       iconName = 'file_type_scss.svg';
-    } else if (this.file.ext() == 'js' && this.file.name().includes('test')) {
+    } else if (
+      ext == 'js' &&
+      getName(this.file.relativeFilepath).includes('test')
+    ) {
       iconName = 'file_type_testjs.svg';
     }
 
@@ -109,25 +129,41 @@ export class EmberComponentsProvider
     if (
       !this.workspaceRoot ||
       !this.fileTaxonomy.fileExists('core') ||
-      !this.fileTaxonomy.fileExists('core')
+      !this.fileTaxonomy.fileExists('extended')
     ) {
-      console.error('Workspace root is non voyager-web.');
+      getOutputChannel().appendLine('Workspace root is non voyager-web.');
       return;
     }
+  }
+
+  _findFilesWrapper(
+    toFind: string,
+    count = 50,
+    toExcludeList = [
+      '**/node_modules',
+      '**/bower_components',
+      'build',
+      'dist',
+      'tmp',
+      'i18n',
+      '.vscode',
+    ]
+  ): Thenable<vscode.Uri[]> {
+    const toExclude = `{${toExcludeList.join(',')}}`;
+    return vscode.workspace.findFiles(toFind, toExclude, 50);
   }
 
   /**
    * This will open the file that was clicked on within the plugin
    */
-  openFile(relativeFilePath: string) {
-    const fullPath: string = this.fileTaxonomy.getFullPath(relativeFilePath);
-    var uri: vscode.Uri = vscode.Uri.file(fullPath);
-    vscode.workspace.openTextDocument(uri).then(
+  openFile(file: File) {
+    vscode.workspace.openTextDocument(file.uri).then(
       (doc: vscode.TextDocument) => {
         vscode.window.showTextDocument(doc);
       },
       (error: any) => {
-        console.error(error);
+        getOutputChannel().appendLine(error);
+        getOutputChannel().show(true);
       }
     );
   }
@@ -138,14 +174,60 @@ export class EmberComponentsProvider
    * @param fileUri
    */
   openComponent(fileUri): void {
-    const filepath = fileUri.path;
-    const file = new File(getRelativeFilepath(this.workspaceRoot, filepath));
+    const file = new File(this.workspaceRoot, fileUri);
     const filteredFiles = this.fileTaxonomy.filterNonComponents([file]);
     if (filteredFiles.length > 0) {
       const component = new Component(filteredFiles[0]);
-      this.openComponents.add(new Component(filteredFiles[0]));
+
+      getOutputChannel().appendLine('Opening: ' + component.callableName());
+
+      // find most files
+      this._findFilesWrapper('**/*' + component.name + '.*').then(
+        (workspaceFiles: vscode.Uri[]) => {
+          this.addItemsToTreeView(component, workspaceFiles);
+        },
+        (error: any) => {
+          getOutputChannel().appendLine(error);
+          getOutputChannel().show(true);
+        }
+      );
+      // find outstanding test files
+      this._findFilesWrapper('**/*' + component.name + '*-test.js').then(
+        (workspaceFiles: vscode.Uri[]) => {
+          this.addItemsToTreeView(component, workspaceFiles);
+        },
+        (error: any) => {
+          getOutputChannel().appendLine(error);
+          getOutputChannel().show(true);
+        }
+      );
+
+      this.openComponents.add(component);
       this._onDidChangeTreeData.fire();
+    } else {
+      getOutputChannel().appendLine(
+        'Error: ' + file.relativeFilepath + ' is not a component file'
+      );
     }
+  }
+
+  addItemsToTreeView(component: Component, foundFiles: vscode.Uri[]): void {
+    getOutputChannel().appendLine('Found Files:');
+
+    foundFiles.map(foundFile => {
+      getOutputChannel().appendLine(foundFile.path);
+
+      const currFile = new File(this.workspaceRoot, foundFile);
+      const platform = getPlatform(
+        getRelativeFilepath(this.workspaceRoot, foundFile.path)
+      );
+      if (!component.platforms[platform]) {
+        component.platforms[platform] = new Platform(platform);
+      }
+      component.platforms[platform].files.push(currFile);
+
+      this._onDidChangeTreeData.fire();
+    });
   }
 
   /**
@@ -203,7 +285,9 @@ export class EmberComponentsProvider
     if (treeItem.contextValue === 'component') {
       name = (<ComponentTreeElement>treeItem).component.name;
     } else {
-      name = (<FileTreeElement>treeItem).file.componentName();
+      name = getComponentName(
+        (<FileTreeElement>treeItem).file.relativeFilepath
+      );
     }
 
     let filter = name;
@@ -217,16 +301,6 @@ export class EmberComponentsProvider
       'vscode.open',
       vscode.Uri.parse(encodeURI(browserPath))
     );
-  }
-
-  refresh(): void {
-    this.getOpenFiles().then(files => {
-      let openFiles = this.fileTaxonomy.filterNonComponents(files);
-      openFiles.forEach(file => {
-        this.openComponents.add(new Component(file));
-      });
-      this._onDidChangeTreeData.fire();
-    });
   }
 
   getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
@@ -265,33 +339,29 @@ export class EmberComponentsProvider
     });
   }
 
+  /**
+   * This creates new platform tree branches for a given component from all of the files within the tree
+   */
   createPlatformBranches(
     componentBranch: ComponentTreeElement
   ): PlatformTreeElement[] {
-    const platforms = this.fileTaxonomy.getComponentPlatforms(
-      componentBranch.component
-    );
-    return platforms.map(platform => {
+    const platforms = componentBranch.component.platforms;
+    return Object.keys(platforms).map((key, index) => {
       return new PlatformTreeElement(
-        componentBranch.component,
-        platform,
+        platforms[key],
         vscode.TreeItemCollapsibleState.Collapsed
       );
     });
   }
 
   createFileBranches(platformBranch: PlatformTreeElement): FileTreeElement[] {
-    const files = this.fileTaxonomy.getComponentPlatformFiles(
-      platformBranch.component,
-      platformBranch.platform
-    );
+    const files = platformBranch.platform.files;
     return files.map(file => {
       return new FileTreeElement(file, vscode.TreeItemCollapsibleState.None);
     });
   }
 
   getOpenFiles(): Promise<File[]> {
-    // return getTestFiles(this.workspaceRoot);
     return getOpenFiles(this.workspaceRoot);
   }
 }

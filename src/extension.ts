@@ -2,7 +2,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { EmberComponentsProvider } from './ember-component-provider';
+import {
+  EmberComponentsProvider,
+  getOutputChannel,
+} from './ember-component-provider';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -61,17 +64,10 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('emberComponents.openFile', filePath =>
-      emberComponentsProvider.openFile(filePath)
-    )
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand('emberComponents.refreshEntry', () =>
-      emberComponentsProvider.refresh()
+    vscode.commands.registerCommand('emberComponents.openFile', file =>
+      emberComponentsProvider.openFile(file)
     )
   );
 
-  console.log(
-    'Congratulations, your extension "ember-component-view" is now active!'
-  );
+  getOutputChannel().appendLine('ember-component-view is now active');
 }

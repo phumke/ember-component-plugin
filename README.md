@@ -33,9 +33,7 @@ None
 
 ## Known Issues
 
-* Doesn't pre-populate the components when first loaded
-* Loops through and opens each file in turn when hitting refresh
-* May not open all of the components correctly the first time
+None
 
 ## Building
 
@@ -44,30 +42,36 @@ https://code.visualstudio.com/docs/extensions/publish-extension
 
 ## Outstanding TODOs
 
-* Nest all platforms of a single component so the tree goes: component -> different platforms -> associated files
 * Add support for services
 * Add support for routes
 * Add right click menu to open editors window
 * Only show right click menu if recognized component
-* Add support for composure phase 2 locations
-* Add support for composure phase 4 test locations
 * Add ability to lookup from a stylesheet
+* Add ability to lookup from a test file
 * Handle special case of shared directory for scss files
-* Fix file structure for global stylesheets
-* Have a single or double click open the component instead of a right click - make this configurable
 * Clean up icons to look like the ones from VS
 * Clean up top level icons - add color to light version
 * Add save/reload capability on reopen working state
 * Add logo for the extension
 * Add tests
-* Refactor (including splitting treeview from commands)
-* Add support for partials - maybe not - they don't have JS associated
+* Add support for partials
 * Add ability to mark if a file is found in the wrong location
 * Add ability to open a component from right clicking on a test
 
 ## Release Notes
 
 Still in dogfooding stage.
+
+### 0.2.0
+
+* Updated numbering to contain a build number
+* Removed 'refresh' capability
+* Added more error logging
+
+### 0.1.8
+
+* Refactored code to use built in file search to find components instead of looking in hard coded paths
+* Added an output channel for logging so users can get some insight into the code
 
 ### 0.1.7
 

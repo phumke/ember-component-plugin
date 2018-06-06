@@ -1,25 +1,22 @@
 'use strict';
 
 import { File } from './vweb-file';
-
-const componentPlatformOrdering = {
-  lib: 0,
-  'engine-lib': 0,
-  core: 1,
-  extended: 2,
-};
+import {
+  getComponentName,
+  getEngine,
+  getPathRemainder,
+} from './vweb-file-taxonomy';
 
 export class Component {
   name = null;
-  platform = null;
   engine = null;
   pathRemainder = null;
+  platforms = {};
 
   constructor(public readonly file: File) {
-    this.name = file.componentName();
-    this.platform = file.platform();
-    this.engine = file.engine();
-    this.pathRemainder = file.pathRemainder();
+    this.name = getComponentName(file.relativeFilepath);
+    this.engine = getEngine(file.relativeFilepath);
+    this.pathRemainder = getPathRemainder(file.relativeFilepath);
   }
 
   callableName() {
@@ -32,7 +29,7 @@ export class Component {
   }
 
   toIdString() {
-    return this.name + this.platform + this.engine + this.pathRemainder;
+    return this.name + this.engine + this.pathRemainder;
   }
 }
 
@@ -64,19 +61,7 @@ export class ComponentSet {
   }
 
   toSortedArray(): Component[] {
-    const sortedArray = this.toArray().sort(compareComponents);
+    const sortedArray = this.toArray().sort();
     return sortedArray;
   }
-}
-
-function compareComponents(left: Component, right: Component) {
-  if (left.name < right.name) {
-    return -1;
-  } else if (left.name > right.name) {
-    return 1;
-  }
-  return (
-    componentPlatformOrdering[left.platform] -
-    componentPlatformOrdering[right.platform]
-  );
 }
