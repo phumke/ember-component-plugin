@@ -273,29 +273,39 @@ export class EmberComponentsProvider
 
   /**
    * This will attempt to run a given type of test for a component wihtin the browser, or all tests that match that specializedName.
-   * TODO change the path to be the localhost one to handle qprod
    *
    * @param treeItem the clicked on component
    * @param testType the type of component, options are 'unit', 'integration', 'acceptance', or '', defaults to ''
    */
   runTests(treeItem: vscode.TreeItem, testType: string = ''): void {
-    const rootPath = 'https://pemberly.www.linkedin.com:4443/tests/index.html';
+    const { testUrl } = vscode.workspace.getConfiguration(
+      'ember-component-view'
+    );
     const filterBase = '?filter=';
-    let name;
-    if (treeItem.contextValue === 'component') {
-      name = (<ComponentTreeElement>treeItem).component.name;
+
+    const treeLevel = treeItem.contextValue;
+    let componentName;
+    if (treeLevel === 'component') {
+      componentName = (<ComponentTreeElement>treeItem).component.name;
+    } else if (treeLevel === 'platform') {
+      // TODO fix this - it's pretty hacky right now
+      componentName = getComponentName(
+        (<PlatformTreeElement>treeItem).platform.files[0].relativeFilepath
+      );
     } else {
-      name = getComponentName(
+      componentName = getComponentName(
         (<FileTreeElement>treeItem).file.relativeFilepath
       );
     }
 
-    let filter = name;
-    if (testType) {
-      filter = '/' + testType + '.*' + name + '/i';
-    }
+    const filter = testType
+      ? '/' + testType + '.*' + componentName + '/i'
+      : componentName;
 
-    const browserPath = rootPath + filterBase + filter;
+    const browserPath = testUrl + filterBase + filter;
+
+    getOutputChannel().appendLine('Running test: ' + browserPath);
+
     // Open in browser
     vscode.commands.executeCommand(
       'vscode.open',
