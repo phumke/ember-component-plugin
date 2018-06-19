@@ -10,22 +10,33 @@ A component can be opened from the right click menu within the tree view, and cl
 
 Clicking on a given file will open it.
 
-Tests can also be run from the right click menu.  Note that this will set the filter within the pemberly test page, and isn't dependent on if a specific file is found within the codebase.
+Tests can also be run from the right click menu.  Note that this will set the filter within the qprod localhost test page, and isn't dependent on if a specific file is found within the codebase.
 
 #### Navigation Menu Right Click
 ![Navigation Right Click Menu](images/navRightClick.png)
-> The right click menu gives you the option to open a given component
+> The right click menu gives you the option to open a given component.
 
 #### Component View
 ![Top Level Treeview](images/topLevel.png)
-> The top level treeview has different icons for each of the specific types of components.  It also includes the full path for a given component in case the same name exists in multiple locations.
+> The top level treeview has a list of all of the open components.  Note that currently there is no icon associated with a given component.
 
-![Files Listed Inside](images/componentFiles.png)
-> A list of all of the found associated files.  Note that multiple stylesheets may be listed if multiple associated ones are found in the engine and a global/common location.
+![Platforms Listed Inside](images/platforms.png)
+> Opening a given component will show a list of all of the platforms where files for that component were found.
+
+![Files Listed Inside](images/files.png)
+> Opening a given platform will list all of the associated files found for that component within that platform.
 
 #### Component Right Click Menu
 ![Component Right Click Menu](images/componentRightClick.png)
-> Closing or testing a component
+> Closing or testing a component. Note that running a test will always test the full component, and currently doesn't contextually test just the platform or file if they were selected.
+
+## Extension Settings
+
+By default, tests are run against the qprod test url.  In order to use the pemberly test url, change the `testUrl` configuration property:
+
+```
+"ember-component-view.testUrl": "https://pemberly.www.linkedin.com:4443/tests/index.html"
+```
 
 ## Requirements
 
@@ -33,7 +44,9 @@ None
 
 ## Known Issues
 
-None
+Different components with the same name will not correctly be resolved into their respective components at the top level, and will all be listed under the current component level.
+
+Vscode search is used to resolve components, therefore if the search includes tmp, build, and dist directories it may take time to find the components.
 
 ## Building
 
@@ -42,6 +55,7 @@ https://code.visualstudio.com/docs/extensions/publish-extension
 
 ## Outstanding TODOs
 
+* Fix resolver to correctly identify if multiple components were found and load the files into different components
 * Add support for services
 * Add support for routes
 * Add right click menu to open editors window
@@ -61,6 +75,11 @@ https://code.visualstudio.com/docs/extensions/publish-extension
 ## Release Notes
 
 Still in dogfooding stage.
+
+### 0.2.1
+
+* Added a testUrl extension option to allow updating the test url
+* Fix tests to correctly run the component tests no matter where they're run within the tree
 
 ### 0.2.0
 

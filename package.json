@@ -3,7 +3,7 @@
     "license": "MIT",
     "displayName": "Ember-Component-View",
     "description": "A tree view for ember components",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "publisher": "phumke",
     "engines": {
         "vscode": "^1.17.0"
@@ -93,6 +93,17 @@
                     "command": "emberComponents.openComponent"
                 }
             ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Ember Components Configuration",
+            "properties": {
+                "ember-component-view.testUrl": {
+                    "type": "string",
+                    "default": "https://localhost:4443/index.html",
+                    "description": "The url for running tests"
+                }
+            }
         }
     },
     "scripts": {
